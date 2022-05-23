@@ -5,8 +5,11 @@ except ImportError:
 __author__ = "Ian Hunt-Isaak, John Russell"
 __email__ = "ianhuntisaak@gmail.com"
 
+from ._generators import ImageGenerator
+
 __all__ = [
     "__version__",
     "__author__",
     "__email__",
+    "ImageGenerator",
 ]
