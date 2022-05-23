@@ -32,7 +32,7 @@ class ImageGenerator:
         self._step_scale = step_scale
         self._stage_drift = np.array(XY_stage_drift)
 
-    def snap_img(self, image_loc: tuple[float, float], as_rgb=False):
+    def snap_img(self, image_loc: tuple[float, float], z: float = 0, as_rgb=False):
         x_idx = (self._pos[:, 0] < image_loc[0] + self._shape[0] // 2) & (
             self._pos[:, 0] > image_loc[0] - self._shape[0] // 2
         )
@@ -43,10 +43,14 @@ class ImageGenerator:
 
         coords = self._pos[idx] + (self._shape / 2 - np.asarray(image_loc))[None, :]
         radii = self._radii[idx]
+        inter = radii ** 2 - z ** 2
+        inter[inter < 0] = 0
+        radii = np.sqrt(inter)
         ids = self._ids[idx]
 
         out = np.zeros(self._shape, dtype=np.uint16)
         for pos, r, id_ in zip(coords, radii, ids):
+            # r = np.sqrt(inter)
             out[disk(pos, r, shape=self._shape)] = id_
 
         if as_rgb:
