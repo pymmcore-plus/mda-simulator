@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import defaultdict
+
 import numpy as np
 from skimage.color import label2rgb
 from skimage.draw import disk
@@ -17,7 +19,7 @@ class ImageGenerator:
         extent=10,
         radius_loc=25,
         radius_scale=5,
-        step_scale: tuple[int, int] = (5, 5),
+        step_scale: tuple[float, float] = (2.5, 2.5),
         XY_stage_drift: tuple[int, int] = (0, 0),
     ):
         self._rng = np.random.default_rng()
@@ -31,8 +33,23 @@ class ImageGenerator:
         self._pos = np.hstack((X, Y))
         self._step_scale = step_scale
         self._stage_drift = np.array(XY_stage_drift)
+        # A is per channel
+        self._A: dict[int, np.ndarray] = defaultdict(
+            lambda: np.abs(self._rng.normal(1024, 256))
+        )
+        # sigma dict is per cell/per channel
+        self._sigma: dict[int, np.ndarray] = defaultdict(
+            lambda: 1
+            + np.abs(self._rng.normal(radius_loc / 10, radius_scale / 10, size=self._N))
+        )
 
-    def snap_img(self, image_loc: tuple[float, float], z: float = 0, as_rgb=False):
+    @property
+    def img_shape(self) -> np.ndarray:
+        return self._shape
+
+    def snap_img(
+        self, image_loc: tuple[float, float], c: int = 0, z: float = 0, exposure=1
+    ):
         x_idx = (self._pos[:, 0] < image_loc[0] + self._shape[0] // 2) & (
             self._pos[:, 0] > image_loc[0] - self._shape[0] // 2
         )
@@ -46,18 +63,22 @@ class ImageGenerator:
         inter = radii ** 2 - z ** 2
         inter[inter < 0] = 0
         radii = np.sqrt(inter)
+        sigmas = self._sigma[c][idx]
+        A = self._A[c]
         ids = self._ids[idx]
 
         out = np.zeros(self._shape, dtype=np.uint16)
-        for pos, r, id_ in zip(coords, radii, ids):
-            # r = np.sqrt(inter)
-            out[disk(pos, r, shape=self._shape)] = id_
 
-        if as_rgb:
-            return label2rgb(out, colors=self._colors[idx])
-            # return self.image2rgb(out)
-        else:
-            return out
+        for pos, r, id_, sigma in zip(coords, radii, ids, sigmas):
+
+            pixels = disk(pos, r, shape=self._shape)
+            if c > 0:
+                dists = np.sqrt((pixels[0] - pos[0]) ** 2 + (pixels[1] - pos[1]) ** 2)
+                intensity = exposure * A * np.exp(-dists / (2 * sigma ** 2))
+            else:
+                intensity = id_
+            out[pixels] = intensity
+        return out
 
     def image2rgb(self, img):
         """
