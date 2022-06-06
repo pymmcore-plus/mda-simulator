@@ -1,11 +1,7 @@
 """
 Example of using with Napari-Micromanager
 
-For installing everything:
-
 pip install napari-micromanager
-pip install git+https://github.com/ianhi/pymmcore-MDA-engines
-
 
 After you run the MDA make sure to reset the histogram for the non-BF channels,
 otherwise you will be unable to see the spatial variation.
@@ -14,11 +10,11 @@ otherwise you will be unable to see the spatial variation.
 from pathlib import Path
 
 import napari
-from pymmcore_mda_engines import DevEngine
 from pymmcore_plus import CMMCorePlus
 from useq import MDASequence
 
 from mda_simulator import ImageGenerator
+from mda_simulator.mmcore import FakeDemoCamera
 
 v = napari.Viewer()
 dw, main_window = v.window.add_plugin_dock_widget("napari-micromanager")
@@ -26,11 +22,16 @@ dw, main_window = v.window.add_plugin_dock_widget("napari-micromanager")
 core = CMMCorePlus.instance()
 core.loadSystemConfiguration(Path(__file__).parent / "config.cfg")
 
-gen = ImageGenerator(4000)
+gen = ImageGenerator(N=4000)
 
-# engine that uses an ImageGenerator by default
-engine = DevEngine(image_generator=gen)
-core.register_mda_engine(engine)
+
+# Create an object that will modify the `snap` method of the CMMCorePlus
+# instance to return images from our ImageGenerator
+fake_cam = FakeDemoCamera(
+    gen,
+    timing=10,  # how many real world seconds to wait to step the ImageGenerator time
+    core=core,
+)
 
 mda = MDASequence(
     channels=[
