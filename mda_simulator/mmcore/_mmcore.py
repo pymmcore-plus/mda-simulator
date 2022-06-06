@@ -1,7 +1,6 @@
 from numbers import Real
 
 import numpy as np
-from loguru import logger
 from pymmcore_plus import CMMCorePlus
 from pymmcore_plus._util import _qt_app_is_running
 from qtpy.QtCore import QTimer
@@ -141,8 +140,6 @@ class FakeDemoCamera:
             c = self._channel_tracker.current_channel_idx
             z = self._core.getPosition()
             exp = self._core.getExposure()
-            logger.debug(c)
-            logger.debug(self)
             self._image = self._img_gen.snap_img(xy, c=c, z=z, exposure=exp)
 
     def _getImage(self, *args, fix=True) -> np.ndarray:
