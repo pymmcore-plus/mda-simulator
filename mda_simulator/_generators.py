@@ -31,7 +31,7 @@ class ImageGenerator:
         X = self._rng.uniform(-self._shape[0] * extent, self._shape[0] * extent, (N, 1))
         Y = self._rng.uniform(-self._shape[1] * extent, self._shape[1] * extent, (N, 1))
         self._pos = np.hstack((X, Y))
-        self._step_scale = step_scale
+        self._step_scale = np.asarray(step_scale)
         self._stage_drift = np.array(XY_stage_drift)
         # A is per channel
         self._A: dict[int, np.ndarray] = defaultdict(
@@ -47,20 +47,18 @@ class ImageGenerator:
     def img_shape(self) -> np.ndarray:
         return self._shape
 
-    def snap_img(
-        self, image_loc: tuple[float, float], c: int = 0, z: float = 0, exposure=1
-    ):
-        x_idx = (self._pos[:, 0] < image_loc[0] + self._shape[0] // 2) & (
-            self._pos[:, 0] > image_loc[0] - self._shape[0] // 2
+    def snap_img(self, xy: tuple[float, float], c: int = 0, z: float = 0, exposure=1):
+        x_idx = (self._pos[:, 0] < xy[0] + self._shape[0] // 2) & (
+            self._pos[:, 0] > xy[0] - self._shape[0] // 2
         )
-        y_idx = (self._pos[:, 1] < image_loc[1] + self._shape[1] // 2) & (
-            self._pos[:, 1] > image_loc[1] - self._shape[1] // 2
+        y_idx = (self._pos[:, 1] < xy[1] + self._shape[1] // 2) & (
+            self._pos[:, 1] > xy[1] - self._shape[1] // 2
         )
         idx = x_idx & y_idx
 
-        coords = self._pos[idx] + (self._shape / 2 - np.asarray(image_loc))[None, :]
+        coords = self._pos[idx] + (self._shape / 2 - np.asarray(xy))[None, :]
         radii = self._radii[idx]
-        inter = radii ** 2 - z ** 2
+        inter = radii**2 - z**2
         inter[inter < 0] = 0
         radii = np.sqrt(inter)
         sigmas = self._sigma[c][idx]
@@ -74,7 +72,7 @@ class ImageGenerator:
             pixels = disk(pos, r, shape=self._shape)
             if c > 0:
                 dists = np.sqrt((pixels[0] - pos[0]) ** 2 + (pixels[1] - pos[1]) ** 2)
-                intensity = exposure * A * np.exp(-dists / (2 * sigma ** 2))
+                intensity = exposure * A * np.exp(-dists / (2 * sigma**2))
             else:
                 intensity = id_
             out[pixels] = intensity
@@ -95,7 +93,8 @@ class ImageGenerator:
         idx = np.floor(np.unique(img)).astype(int)
         return label2rgb(img, colors=self._colors[idx])
 
-    def step_positions(self, delta_t=1):
+    def increment_time(self, delta_t=1):
+        """increment the simulation time by delta_t time units."""
         self._pos += self._rng.normal(
             scale=self._step_scale * delta_t, size=(self._N, 2)
         ) + np.array(self._stage_drift)

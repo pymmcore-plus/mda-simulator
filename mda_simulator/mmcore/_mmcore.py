@@ -92,7 +92,7 @@ class FakeDemoCamera:
         self._timer = QTimer()
         self._timer.timeout.connect(self._bump_time)
         if _qt_app_is_running():
-            self._timer.start(self._timing * 1000)
+            self._timer.start(int(self._timing * 1000))
 
     @property
     def image_generator(self) -> ImageGenerator:
@@ -120,7 +120,7 @@ class FakeDemoCamera:
         if self._timer.isActive():
             return
         else:
-            self._timer.start(self._timing)
+            self._timer.start(int(self._timing * 1000))
 
     def pause_timer(self):
         """
@@ -129,7 +129,7 @@ class FakeDemoCamera:
         self._timer.stop()
 
     def _bump_time(self):
-        self._img_gen.step_positions()
+        self._img_gen.increment_time()
 
     def _snapImage(self) -> None:
 

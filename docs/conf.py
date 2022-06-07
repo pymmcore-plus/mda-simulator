@@ -57,7 +57,6 @@ subprocess.call(
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "jupyter_sphinx",
     "myst_nb",
     "numpydoc",
     "sphinx.ext.autodoc",
@@ -66,9 +65,6 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx_copybutton",
-    "sphinx_panels",
-    "sphinx_thebe",
-    "sphinx_togglebutton",
 ]
 
 
@@ -115,11 +111,11 @@ copybutton_prompt_text = r">>> |\.\.\. "  # doctest
 linkcheck_anchors = False
 linkcheck_ignore = []  # type: ignore
 
-execution_timeout = -1
-jupyter_execute_notebooks = "off"
+nb_execution_timeout = -1
+nb_execution_mode = "off"
 if "EXECUTE_NB" in os.environ:
     print("\033[93;1mWill run Jupyter notebooks!\033[0m")
-    jupyter_execute_notebooks = "force"
+    nb_execution_mode = "force"
 
 # Settings for myst-parser
 myst_enable_extensions = [
@@ -158,30 +154,10 @@ html_css_files = [
 ]
 html_sourcelink_suffix = ""
 html_static_path = ["_static"]
-html_theme = "sphinx_book_theme"
-html_theme_options = {
-    "launch_buttons": {
-        "binderhub_url": "https://mybinder.org",
-        "colab_url": "https://colab.research.google.com",
-        "notebook_interface": "jupyterlab",
-        "thebe": True,
-        "thebelab": True,
-    },
-    "path_to_docs": "docs",
-    "repository_branch": "main",
-    "repository_url": "https://github.com/ianhi/mda-simulator",
-    "use_download_button": True,
-    "use_edit_page_button": True,
-    "use_issues_button": True,
-    "use_repository_button": True,
-}
+html_theme = "furo"
 html_title = "mda-simulator"
 
 master_doc = "index"
-thebe_config = {
-    "repository_url": html_theme_options["repository_url"],
-    "repository_branch": html_theme_options["repository_branch"],
-}
 
 
 # based on pandas/doc/source/conf.py
