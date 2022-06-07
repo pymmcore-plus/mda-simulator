@@ -31,7 +31,7 @@ class ImageGenerator:
         X = self._rng.uniform(-self._shape[0] * extent, self._shape[0] * extent, (N, 1))
         Y = self._rng.uniform(-self._shape[1] * extent, self._shape[1] * extent, (N, 1))
         self._pos = np.hstack((X, Y))
-        self._step_scale = step_scale
+        self._step_scale = np.asarray(step_scale)
         self._stage_drift = np.array(XY_stage_drift)
         # A is per channel
         self._A: dict[int, np.ndarray] = defaultdict(
