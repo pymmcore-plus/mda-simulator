@@ -57,7 +57,6 @@ subprocess.call(
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "jupyter_sphinx",
     "myst_nb",
     "numpydoc",
     "sphinx.ext.autodoc",
@@ -66,8 +65,6 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx_copybutton",
-    "sphinx_panels",
-    "sphinx_togglebutton",
 ]
 
 
