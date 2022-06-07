@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from functools import lru_cache
 
 import numpy as np
 from skimage.color import label2rgb
@@ -48,6 +49,11 @@ class ImageGenerator:
         return self._shape
 
     def snap_img(self, xy: tuple[float, float], c: int = 0, z: float = 0, exposure=1):
+        return self._snap_img(tuple(xy), c, z, exposure)
+
+    @lru_cache(256)
+    def _snap_img(self, xy: tuple[float, float], c: int = 0, z: float = 0, exposure=1):
+        # print('here')
         x_idx = (self._pos[:, 0] < xy[0] + self._shape[0] // 2) & (
             self._pos[:, 0] > xy[0] - self._shape[0] // 2
         )
@@ -95,6 +101,9 @@ class ImageGenerator:
 
     def increment_time(self, delta_t=1):
         """increment the simulation time by delta_t time units."""
+        # clear the cache as the image will have changed
+        self._snap_img.cache_clear()
+
         self._pos += self._rng.normal(
             scale=self._step_scale * delta_t, size=(self._N, 2)
         ) + np.array(self._stage_drift)
