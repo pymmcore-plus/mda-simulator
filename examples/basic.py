@@ -32,7 +32,7 @@ for t in range(T):
         for zi, z in enumerate(np.linspace(-30, 30, Z)):
             out[t, p, zi] = img_gen.snap_img(image_locations[p], z=z)
             # out_rgb[t, p, zi] = img_gen.snap_img(image_locations[p], z=z, as_rgb=True)
-    img_gen.step_positions()
+    img_gen.increment_time()
 # plt.figure()
 # hyperslicer(out_rgb, is_color_image=True)
 # hyperslicer(out_rgb, is_color_image=True)
