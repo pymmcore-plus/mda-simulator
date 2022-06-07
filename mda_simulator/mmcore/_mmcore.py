@@ -87,6 +87,7 @@ class FakeDemoCamera:
         self._img_gen: ImageGenerator = img_gen if img_gen else ImageGenerator(10000)
         self._core.snapImage = self._snapImage
         self._core.getImage = self._getImage
+        self._core.getLastImage = self._getLastImage
 
         self._timing = timing
         self._timer = QTimer()
@@ -147,3 +148,7 @@ class FakeDemoCamera:
             if self._image is None:
                 raise RuntimeError("Issue snapImage before getImage")
             return self._image
+
+    def _getLastImage(self):
+        self._snapImage()
+        return self._image
