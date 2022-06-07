@@ -129,7 +129,7 @@ class FakeDemoCamera:
         self._timer.stop()
 
     def _bump_time(self):
-        self._img_gen.step_positions()
+        self._img_gen.increment_time()
 
     def _snapImage(self) -> None:
 
