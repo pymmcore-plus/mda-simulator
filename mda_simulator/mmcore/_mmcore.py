@@ -82,7 +82,11 @@ class FakeDemoCamera:
         """
         self._core = core if core else CMMCorePlus.instance()
         self._channel_tracker = ChannelTracker(core=core)
-        self._lock = self._core.lock
+        try:
+            self._lock = self._core._lock
+        except AttributeError:
+            self._lock = self._core.lock
+
         self._image = None
         self._img_gen: ImageGenerator = img_gen if img_gen else ImageGenerator(10000)
         self._core.snapImage = self._snapImage
