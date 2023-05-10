@@ -22,6 +22,9 @@ class ImageGenerator:
         radius_scale=5,
         step_scale: tuple[float, float] = (2.5, 2.5),
         XY_stage_drift: tuple[int, int] = (0, 0),
+        noise_mean: float = 0,
+        noise_scale: float = 0,
+        snr = 1,
     ):
         self._rng = np.random.default_rng()
         self._N = N
@@ -34,6 +37,10 @@ class ImageGenerator:
         self._pos = np.hstack((X, Y))
         self._step_scale = np.asarray(step_scale)
         self._stage_drift = np.array(XY_stage_drift)
+        self._noise_mean = noise_mean
+        self._noise_scale = noise_scale
+        self._add_noise = (noise_mean != 0) and (noise_scale != 0)
+        self._snr = snr
         # A is per channel
         self._A: dict[int, np.ndarray] = defaultdict(
             lambda: np.abs(self._rng.normal(1024, 256))
@@ -71,18 +78,19 @@ class ImageGenerator:
         A = self._A[c]
         ids = self._ids[idx]
 
-        out = np.zeros(self._shape, dtype=np.uint16)
+        out = np.zeros(self._shape, dtype=np.int16)
 
         for pos, r, id_, sigma in zip(coords, radii, ids, sigmas):
-
             pixels = disk(pos, r, shape=self._shape)
             if c > 0:
                 dists = np.sqrt((pixels[0] - pos[0]) ** 2 + (pixels[1] - pos[1]) ** 2)
                 intensity = exposure * A * np.exp(-dists / (2 * sigma**2))
             else:
-                intensity = id_
+                intensity = A
             out[pixels] = intensity
-        return out
+        out = out + self._rng.normal(0, A/self._snr, size=self._shape)
+        out[out<0] = 0
+        return out.astype(np.uint16).T
 
     def image2rgb(self, img):
         """
