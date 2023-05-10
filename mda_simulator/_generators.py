@@ -24,7 +24,7 @@ class ImageGenerator:
         XY_stage_drift: tuple[int, int] = (0, 0),
         noise_mean: float = 0,
         noise_scale: float = 0,
-        snr = 1,
+        snr=1,
     ):
         self._rng = np.random.default_rng()
         self._N = N
@@ -88,8 +88,8 @@ class ImageGenerator:
             else:
                 intensity = A
             out[pixels] = intensity
-        out = out + self._rng.normal(0, A/self._snr, size=self._shape)
-        out[out<0] = 0
+        out = out + self._rng.normal(0, A / self._snr, size=self._shape)
+        out[out < 0] = 0
         return out.astype(np.uint16).T
 
     def image2rgb(self, img):

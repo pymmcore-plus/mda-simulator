@@ -137,7 +137,6 @@ class FakeDemoCamera:
         self._img_gen.increment_time()
 
     def _snapImage(self) -> None:
-
         with synchronized(self._lock):
             # self.core
             xy = self._core.getXYPosition()
