@@ -22,8 +22,6 @@ class ImageGenerator:
         radius_scale=5,
         step_scale: tuple[float, float] = (2.5, 2.5),
         XY_stage_drift: tuple[int, int] = (0, 0),
-        noise_mean: float = 0,
-        noise_scale: float = 0,
         snr=1,
     ):
         self._rng = np.random.default_rng()
@@ -37,9 +35,6 @@ class ImageGenerator:
         self._pos = np.hstack((X, Y))
         self._step_scale = np.asarray(step_scale)
         self._stage_drift = np.array(XY_stage_drift)
-        self._noise_mean = noise_mean
-        self._noise_scale = noise_scale
-        self._add_noise = (noise_mean != 0) and (noise_scale != 0)
         self._snr = snr
         # A is per channel
         self._A: dict[int, np.ndarray] = defaultdict(
@@ -50,6 +45,15 @@ class ImageGenerator:
             lambda: 1
             + np.abs(self._rng.normal(radius_loc / 10, radius_scale / 10, size=self._N))
         )
+
+    @property
+    def snr(self) -> float:
+        return self._snr
+
+    @snr.setter
+    def snr(self, val: float):
+        # TODO: add validation
+        self._snr = val
 
     @property
     def img_shape(self) -> np.ndarray:
@@ -88,6 +92,7 @@ class ImageGenerator:
             else:
                 intensity = A
             out[pixels] = intensity
+        # todo: make this poisson
         out = out + self._rng.normal(0, A / self._snr, size=self._shape)
         out[out < 0] = 0
         return out.astype(np.uint16).T
