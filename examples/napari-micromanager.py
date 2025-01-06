@@ -7,6 +7,7 @@ After you run the MDA make sure to reset the histogram for the non-BF channels,
 otherwise you will be unable to see the spatial variation.
 
 """
+
 from pathlib import Path
 
 import napari
